@@ -52,6 +52,9 @@
       --on-hr: #1a1300;
     }
 
+    /* ダブルタップでの拡大を無効化（ピンチ拡大は残す） */
+    * { touch-action: manipulation; }
+
     body {
       margin: 0;
       background: var(--bg);
