@@ -1,6 +1,7 @@
 {
-  "name": "Batting Machine Log",
-  "short_name": "Batting Log",
+  "name": "バッティングマシン記録",
+  "short_name": "バッティング記録",
+  "lang": "ja",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

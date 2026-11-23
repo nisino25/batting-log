@@ -1,5 +1,6 @@
-// Offline support: network first, fall back to the cached copy when offline.
-const CACHE = 'batting-log-v1';
+// オフライン対応: まずネットワーク、だめならキャッシュを使う。
+// キャッシュ名を変えると、古いキャッシュ（英語版など）は次回読み込みで削除される。
+const CACHE = 'batting-log-v2';
 const ASSETS = [
   './',
   './index.html',

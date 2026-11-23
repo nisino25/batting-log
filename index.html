@@ -20,10 +20,12 @@
       --fg: #1c2019;
       --muted: #6c7269;
       --line: #e3e2db;
+      --tile: #f3f2ee;
       --hit: #1d7a4b;
       --on-hit: #ffffff;
       --hr: #a86f00;
       --on-hr: #ffffff;
+      --danger: #b4412c;
     }
     @media (prefers-color-scheme: dark) {
       :root:not([data-theme="light"]) {
@@ -33,10 +35,12 @@
         --fg: #ebeae4;
         --muted: #9ca296;
         --line: #2c3029;
+        --tile: #111310;
         --hit: #4fc38a;
         --on-hit: #0f1410;
         --hr: #f0b84a;
         --on-hr: #1a1300;
+        --danger: #ec7f67;
       }
     }
     :root[data-theme="dark"] {
@@ -46,10 +50,12 @@
       --fg: #ebeae4;
       --muted: #9ca296;
       --line: #2c3029;
+      --tile: #111310;
       --hit: #4fc38a;
       --on-hit: #0f1410;
       --hr: #f0b84a;
       --on-hr: #1a1300;
+      --danger: #ec7f67;
     }
 
     /* ダブルタップでの拡大を無効化（ピンチ拡大は残す） */
@@ -60,6 +66,7 @@
       background: var(--bg);
       color: var(--fg);
       font: 15px/1.5 system-ui, -apple-system, "Hiragino Sans", "Noto Sans JP", sans-serif;
+      -webkit-tap-highlight-color: transparent;
     }
 
     .wrap {
@@ -73,8 +80,8 @@
       flex-direction: column;
       gap: 14px;
     }
-    .head h1 { font-size: 22px; margin: 0; font-weight: 700; letter-spacing: -0.01em; }
-    .sub { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
+    .head h1 { font-size: 22px; margin: 0; font-weight: 700; letter-spacing: 0.02em; }
+    .sub { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
     h2 { font-size: 17px; margin: 0; }
 
     .card {
@@ -87,12 +94,13 @@
       gap: 14px;
       min-width: 0;
     }
-    .muted { color: var(--muted); font-size: 14px; }
+    .muted { color: var(--muted); font-size: 13px; }
 
+    /* 球数の切り替え */
     .seg {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 6px;
+      gap: 4px;
       background: var(--bg);
       padding: 4px;
       border-radius: 12px;
@@ -110,11 +118,18 @@
     }
     .seg-btn.on { background: var(--card); color: var(--fg); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12); }
 
-    .legend { font-size: 13px; color: var(--muted); margin: 0; }
+    /* 凡例 */
+    .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 0; padding: 0; list-style: none; font-size: 13px; color: var(--muted); }
+    .legend li { display: flex; align-items: center; gap: 6px; }
+    .chip { width: 14px; height: 14px; border-radius: 4px; border: 1px solid var(--line); background: var(--card); display: inline-block; }
+    .chip.hit { background: var(--hit); border-color: var(--hit); }
+    .chip.hr { background: var(--hr); border-color: var(--hr); }
+
+    /* 球のマス */
     .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
     .cell {
       font: inherit;
-      min-height: 62px;
+      min-height: 68px;
       border: 1px solid var(--line);
       border-radius: 12px;
       background: var(--card);
@@ -125,9 +140,10 @@
       justify-content: center;
       gap: 2px;
       cursor: pointer;
-      touch-action: manipulation;
       user-select: none;
+      transition: transform 0.08s ease, background-color 0.15s ease;
     }
+    .cell:active { transform: scale(0.94); }
     .cell .n { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
     .cell .lbl { font-size: 15px; font-weight: 700; min-height: 1.2em; }
     .cell.hit { background: var(--hit); border-color: var(--hit); color: var(--on-hit); }
@@ -135,16 +151,15 @@
     .cell.hr { background: var(--hr); border-color: var(--hr); color: var(--on-hr); }
     .cell.hr .n { color: var(--on-hr); opacity: 0.85; }
 
-    .summary {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      text-align: center;
-    }
-    .stat-v { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.2; }
+    /* 集計 */
+    .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .tile { background: var(--tile); border-radius: 12px; padding: 10px 6px; text-align: center; }
+    .stat-v { font-size: 24px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.2; }
     .stat-l { font-size: 12px; color: var(--muted); }
 
+    .btn-row { display: flex; gap: 8px; }
     .ghost {
+      flex: 1;
       font: inherit;
       font-size: 14px;
       padding: 10px;
@@ -154,6 +169,7 @@
       color: var(--fg);
       cursor: pointer;
     }
+    .ghost.armed { border-color: var(--danger); color: var(--danger); font-weight: 700; }
     .ghost:disabled { opacity: 0.4; cursor: default; }
 
     .note {
@@ -180,18 +196,33 @@
     .save:disabled { opacity: 0.35; cursor: default; }
     .msg { margin: 0; min-height: 1.3em; font-size: 14px; color: var(--muted); text-align: center; }
 
+    /* 記録一覧 */
+    .list-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+    .today { background: var(--tile); border-radius: 12px; padding: 10px 12px; font-size: 14px; }
     .strip { display: flex; flex-wrap: wrap; gap: 4px; }
     .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--line); flex: none; }
     .dot.hit { background: var(--hit); }
     .dot.hr { background: var(--hr); }
-
-    .list-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
     .empty { color: var(--muted); margin: 0; }
     .list { list-style: none; margin: 0; padding: 0; }
     .item { padding: 12px 0; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 8px; min-width: 0; }
-    .item-top { display: flex; justify-content: space-between; gap: 8px; font-size: 14px; }
-    .score { font-weight: 700; font-variant-numeric: tabular-nums; }
+    .item-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 14px; }
+    .score { font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; }
+    .item-foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
     .item-note { font-size: 13px; color: var(--muted); overflow-wrap: anywhere; }
+    .del {
+      font: inherit;
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      margin-left: auto;
+    }
+    .del.armed { border-color: var(--danger); color: var(--danger); font-weight: 700; }
+    .store-note { font-size: 12px; color: var(--muted); margin: 0; }
   </style>
 </head>
 <body>
@@ -200,7 +231,7 @@
 <script src="https://unpkg.com/vue@3.5.13/dist/vue.global.prod.js"></script>
 <script src="jp-holiday.js"></script>
 <script>
-  const { createApp, ref, computed, onMounted } = Vue;
+  const { createApp, ref, computed, onMounted, onBeforeUnmount } = Vue;
 
   // 結果の値: '0' = ヒットなし, '1' = ヒット, '2' = ホームラン
   // タップは 0 → 1 → 2 → 0 の順に切り替わる（1回=ヒット、2回=HR、3回目で解除）
@@ -208,7 +239,7 @@
   const LABEL = { '0': '', '1': 'ヒット', '2': 'HR' };
 
   // ---- 保存（いまはこのブラウザ内）---------------------------------------
-  // 将来クラウドのDBに変えるときは list / add の中身だけ差し替える。
+  // 将来クラウドのDBに変えるときは list / add / remove の中身だけ差し替える。
   const Store = {
     KEY: 'batting-log-rounds',
     async list() {
@@ -224,6 +255,11 @@
       localStorage.setItem(this.KEY, JSON.stringify(rows));
       return item;
     },
+    async remove(id) {
+      const rows = (await this.list()).filter(r => r.id !== id);
+      localStorage.setItem(this.KEY, JSON.stringify(rows));
+      return rows;
+    },
   };
 
   // ---- 集計（結果の並びから計算する）---------------------------------------
@@ -235,6 +271,16 @@
     const pitches = s.length;
     return { pitches, hits, homeRuns, rate: pitches ? Math.round((hits / pitches) * 100) : 0 };
   }
+  function sumStats(list) {
+    const t = list.reduce((a, r) => {
+      const s = stats(r.pattern);
+      return { p: a.p + s.pitches, h: a.h + s.hits, n: a.n + 1 };
+    }, { p: 0, h: 0, n: 0 });
+    return { rounds: t.n, rate: t.p ? Math.round((t.h / t.p) * 100) : 0, pitches: t.p, hits: t.h };
+  }
+  function sameDay(a, b) {
+    return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+  }
   function fmtDate(iso) {
     const d = new Date(iso);
     return isNaN(d) ? '' : d.toLocaleString('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
@@ -244,6 +290,9 @@
     const w = date.getDay();
     if (w === 0 || w === 6) return '週末なので20球';
     return '平日なので25球';
+  }
+  function buzz() {
+    try { if (navigator.vibrate) navigator.vibrate(8); } catch (e) {}
   }
 
   createApp({
@@ -257,16 +306,27 @@
       const loadState = ref('loading'); // loading | ready | error
       const saving = ref(false);
       const msg = ref('');
+      const armed = ref(null);          // 2回押しで実行する操作の目印
+      let armTimer = null;
 
       const cur = computed(() => stats(cells.value.join('')));
-      const overallStats = computed(() => {
-        const t = rounds.value.reduce((a, r) => {
-          const s = stats(r.pattern);
-          return { p: a.p + s.pitches, h: a.h + s.hits };
-        }, { p: 0, h: 0 });
-        return t.p ? Math.round((t.h / t.p) * 100) + '%' : '';
-      });
+      const overall = computed(() => sumStats(rounds.value));
+      const todayTotal = computed(() => sumStats(rounds.value.filter(r => sameDay(new Date(r.playedAt), new Date()))));
       const canSave = computed(() => !saving.value && loadState.value === 'ready' && cur.value.pitches > 0);
+
+      // 1回目は「もう一度で実行」の表示にし、3秒以内の2回目で実行する
+      function confirmTap(key, action) {
+        if (armed.value !== key) {
+          armed.value = key;
+          msg.value = 'もう一度押すと実行されます';
+          clearTimeout(armTimer);
+          armTimer = setTimeout(() => { armed.value = null; msg.value = ''; }, 3000);
+          return;
+        }
+        clearTimeout(armTimer);
+        armed.value = null;
+        action();
+      }
 
       function setSize(n) {
         size.value = n;
@@ -274,19 +334,23 @@
         msg.value = '';
       }
       function tap(i) {
+        buzz();
         const a = cells.value.slice();
         a[i] = CYCLE[(CYCLE.indexOf(a[i]) + 1) % CYCLE.length];
         cells.value = a;
         msg.value = '';
       }
       function cellClass(v) { return v === '1' ? 'hit' : v === '2' ? 'hr' : ''; }
-      function cellLabel(v) { return LABEL[v]; }
       function cellAria(i, v) {
         return (i + 1) + '球目: ' + (v === '2' ? 'ホームラン' : v === '1' ? 'ヒット' : 'ヒットなし');
       }
-      function reset() {
+      function resetRound() {
         cells.value = Array(size.value).fill('0');
-        msg.value = '';
+        note.value = '';
+        msg.value = '入力をリセットしました';
+      }
+      function reset() {
+        confirmTap('reset', resetRound);
       }
 
       async function save() {
@@ -316,6 +380,18 @@
         }
       }
 
+      async function removeRound(id) {
+        try {
+          rounds.value = await Store.remove(id);
+          msg.value = '記録を削除しました';
+        } catch (e) {
+          msg.value = '削除できませんでした';
+        }
+      }
+      function deleteRound(id) {
+        confirmTap('del-' + id, () => removeRound(id));
+      }
+
       onMounted(async () => {
         try {
           const list = await Store.list();
@@ -324,22 +400,25 @@
         } catch (e) {
           loadState.value = 'error';
         }
+        // 記録がブラウザに消されにくくする（対応している場合のみ）
+        try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
         if ('serviceWorker' in navigator) {
           navigator.serviceWorker.register('sw.js').catch(() => {});
         }
       });
+      onBeforeUnmount(() => clearTimeout(armTimer));
 
       return {
-        size, reason, cells, note, rounds, loadState, saving, msg,
-        cur, overallStats, canSave,
-        setSize, tap, cellClass, cellLabel, cellAria, reset, save, fmtDate, stats,
+        size, reason, cells, note, rounds, loadState, saving, msg, armed,
+        cur, overall, todayTotal, canSave,
+        setSize, tap, cellClass, cellAria, reset, save, deleteRound, fmtDate, stats,
       };
     },
     template: `
       <div class="wrap">
         <header class="head">
           <h1>バッティングマシン記録</h1>
-          <p class="sub">{{ reason }}。打ったボールをタップしてください</p>
+          <p class="sub">{{ reason }}。打った球をタップしてください</p>
         </header>
 
         <section class="card">
@@ -349,28 +428,37 @@
               @click="setSize(n)">{{ n }}球</button>
           </div>
 
-          <p class="legend">タップで切り替え：1回＝ヒット、2回＝ホームラン、3回目で解除</p>
+          <ul class="legend">
+            <li><span class="chip"></span>タップなし</li>
+            <li><span class="chip hit"></span>1回＝ヒット</li>
+            <li><span class="chip hr"></span>2回＝ホームラン</li>
+            <li>3回で解除</li>
+          </ul>
 
           <div class="grid">
             <button v-for="(v, i) in cells" :key="i" type="button" class="cell"
               :class="cellClass(v)" :aria-label="cellAria(i, v)" @click="tap(i)">
               <span class="n">{{ i + 1 }}</span>
-              <span class="lbl">{{ cellLabel(v) }}</span>
+              <span class="lbl">{{ v === '1' ? 'ヒット' : v === '2' ? 'HR' : '' }}</span>
             </button>
           </div>
 
           <div class="summary">
-            <div><div class="stat-v">{{ cur.hits }}</div><div class="stat-l">ヒット</div></div>
-            <div><div class="stat-v">{{ cur.homeRuns }}</div><div class="stat-l">ホームラン</div></div>
-            <div><div class="stat-v">{{ cur.rate }}%</div><div class="stat-l">ヒット率</div></div>
+            <div class="tile"><div class="stat-v">{{ cur.hits }}</div><div class="stat-l">ヒット</div></div>
+            <div class="tile"><div class="stat-v">{{ cur.homeRuns }}</div><div class="stat-l">ホームラン</div></div>
+            <div class="tile"><div class="stat-v">{{ cur.rate }}%</div><div class="stat-l">ヒット率</div></div>
           </div>
 
-          <button type="button" class="ghost" @click="reset">全部ヒットなしに戻す</button>
+          <div class="btn-row">
+            <button type="button" class="ghost" :class="{ armed: armed === 'reset' }" @click="reset">
+              {{ armed === 'reset' ? 'もう一度押すとリセット' : '入力をリセット' }}
+            </button>
+          </div>
 
           <input class="note" v-model="note" maxlength="120"
             placeholder="メモ（任意）例：60km/h、ストレート">
           <button type="button" class="save" :disabled="!canSave" @click="save">
-            {{ saving ? '保存中…' : 'このラウンドを保存' }}
+            {{ saving ? '保存中…' : size + '球のラウンドを保存' }}
           </button>
           <p class="msg" aria-live="polite">{{ msg }}</p>
         </section>
@@ -378,7 +466,11 @@
         <section class="card">
           <div class="list-head">
             <h2>最近のラウンド</h2>
-            <span class="muted" v-if="rounds.length">{{ rounds.length }}ラウンド・通算ヒット率 {{ overallStats }}</span>
+            <span class="muted" v-if="overall.rounds">{{ overall.rounds }}ラウンド・通算ヒット率 {{ overall.rate }}%</span>
+          </div>
+
+          <div class="today" v-if="todayTotal.rounds">
+            今日：{{ todayTotal.rounds }}ラウンド・{{ todayTotal.hits }}/{{ todayTotal.pitches }}球・ヒット率 {{ todayTotal.rate }}%
           </div>
 
           <p v-if="loadState === 'loading'" class="muted">読み込み中…</p>
@@ -399,9 +491,19 @@
                 <span v-for="(c, i) in (r.pattern || '').split('')" :key="i" class="dot"
                   :class="c === '2' ? 'hr' : c === '1' ? 'hit' : ''"></span>
               </div>
-              <div v-if="r.note" class="item-note">{{ r.note }}</div>
+              <div class="item-foot">
+                <span class="item-note">{{ r.note }}</span>
+                <button type="button" class="del" :class="{ armed: armed === 'del-' + r.id }"
+                  @click="deleteRound(r.id)">
+                  {{ armed === 'del-' + r.id ? 'もう一度で削除' : '削除' }}
+                </button>
+              </div>
             </li>
           </ul>
+
+          <p class="store-note" v-if="rounds.length">
+            記録はこの端末のブラウザに保存されています。
+          </p>
         </section>
       </div>
     `,
