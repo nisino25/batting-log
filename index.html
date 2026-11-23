@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#111310" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f3f2ee" media="(prefers-color-scheme: light)">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Batting Log">
+  <title>Batting Machine Log</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <style>
+    /* Colors are tokens: light first, then dark (system or explicit). */
+    :root {
+      color-scheme: light;
+      --bg: #f3f2ee;
+      --card: #fffffe;
+      --fg: #1c2019;
+      --muted: #6c7269;
+      --line: #e3e2db;
+      --todo: #dcdbd3;
+      --hit: #1d7a4b;
+      --miss: #b4412c;
+      --on-accent: #ffffff;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        color-scheme: dark;
+        --bg: #111310;
+        --card: #1a1d19;
+        --fg: #ebeae4;
+        --muted: #9ca296;
+        --line: #2c3029;
+        --todo: #2e332c;
+        --hit: #4fc38a;
+        --miss: #ec7f67;
+        --on-accent: #0f1410;
+      }
+    }
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+      --bg: #111310;
+      --card: #1a1d19;
+      --fg: #ebeae4;
+      --muted: #9ca296;
+      --line: #2c3029;
+      --todo: #2e332c;
+      --hit: #4fc38a;
+      --miss: #ec7f67;
+      --on-accent: #0f1410;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font: 15px/1.5 system-ui, -apple-system, "Hiragino Sans", "Noto Sans JP", sans-serif;
+    }
+
+    .wrap {
+      max-width: 520px;
+      margin: 0 auto;
+      padding-top: 20px;
+      padding-bottom: 32px;
+      padding-left: max(16px, env(safe-area-inset-left, 0px));
+      padding-right: max(16px, env(safe-area-inset-right, 0px));
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .head h1 { font-size: 22px; margin: 0; font-weight: 700; letter-spacing: -0.01em; }
+    .sub { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
+    h2 { font-size: 17px; margin: 0; }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      min-width: 0;
+    }
+    .muted { color: var(--muted); font-size: 14px; }
+
+    .seg {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      background: var(--bg);
+      padding: 4px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+    }
+    .seg-btn {
+      font: inherit;
+      font-weight: 600;
+      padding: 10px;
+      border: 0;
+      border-radius: 9px;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+    }
+    .seg-btn.on { background: var(--card); color: var(--fg); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12); }
+    .seg-btn:disabled:not(.on) { opacity: 0.4; cursor: default; }
+
+    .counter { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; }
+    .count { font-size: 20px; font-weight: 700; }
+    .rate { font-size: 40px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+    .strip { display: flex; flex-wrap: wrap; gap: 6px; }
+    .strip.small { gap: 4px; }
+    .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--todo); flex: none; }
+    .strip.small .dot { width: 10px; height: 10px; }
+    .dot.hit { background: var(--hit); }
+    .dot.miss { background: var(--miss); }
+
+    .pad { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .hit-btn, .miss-btn {
+      font: inherit;
+      min-height: 96px;
+      border: 0;
+      border-radius: 14px;
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--on-accent);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+    .hit-btn { background: var(--hit); }
+    .miss-btn { background: var(--miss); }
+    .hit-btn:disabled, .miss-btn:disabled { opacity: 0.35; cursor: default; }
+    kbd {
+      font: inherit;
+      font-size: 11px;
+      font-weight: 600;
+      opacity: 0.85;
+      border: 1px solid currentColor;
+      border-radius: 4px;
+      padding: 0 5px;
+    }
+
+    .row { display: flex; gap: 8px; }
+    .ghost {
+      flex: 1;
+      font: inherit;
+      font-size: 14px;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: transparent;
+      color: var(--fg);
+      cursor: pointer;
+    }
+    .ghost:disabled { opacity: 0.4; cursor: default; }
+
+    .note {
+      font: inherit;
+      width: 100%;
+      box-sizing: border-box;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: var(--bg);
+      color: var(--fg);
+    }
+    .save {
+      font: inherit;
+      font-size: 17px;
+      font-weight: 700;
+      padding: 14px;
+      border: 0;
+      border-radius: 12px;
+      background: var(--fg);
+      color: var(--card);
+      cursor: pointer;
+    }
+    .save:disabled { opacity: 0.35; cursor: default; }
+    .msg { margin: 0; min-height: 1.3em; font-size: 14px; color: var(--muted); text-align: center; }
+
+    .list-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+    .empty { color: var(--muted); margin: 0; }
+    .list { list-style: none; margin: 0; padding: 0; }
+    .item { padding: 12px 0; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+    .item-top { display: flex; justify-content: space-between; gap: 8px; font-size: 14px; }
+    .score { font-weight: 700; font-variant-numeric: tabular-nums; }
+    .item-note { font-size: 13px; color: var(--muted); overflow-wrap: anywhere; }
+  </style>
+</head>
+<body>
+<div id="app"></div>
+
+<script src="https://unpkg.com/vue@3.5.13/dist/vue.global.prod.js"></script>
+<script src="jp-holiday.js"></script>
+<script>
+  const { createApp, ref, computed, onMounted, onBeforeUnmount } = Vue;
+
+  // ---- Storage ----------------------------------------------------------
+  // Rounds are kept in this browser for now. To share them across devices,
+  // replace list/add with calls to a hosted database (same shapes).
+  const Store = {
+    KEY: 'batting-log-rounds',
+    async list() {
+      try { return JSON.parse(localStorage.getItem(this.KEY) || '[]'); } catch (e) { return []; }
+    },
+    async add(row) {
+      const rows = await this.list();
+      const item = { id: String(Date.now()) + Math.random().toString(36).slice(2, 7), ...row };
+      rows.push(item);
+      localStorage.setItem(this.KEY, JSON.stringify(rows));
+      return item;
+    },
+  };
+
+  // ---- Helpers ----------------------------------------------------------
+  function pct(h, p) { return p ? Math.round((h / p) * 100) : 0; }
+  function fmtDate(iso) {
+    const d = new Date(iso);
+    return isNaN(d) ? '' : d.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  }
+  function dayReason(date) {
+    const d = date || new Date();
+    if (JpHoliday.isJpHoliday(d)) return 'Holiday today, so 20 pitches';
+    if (d.getDay() === 0 || d.getDay() === 6) return 'Weekend, so 20 pitches';
+    return 'Weekday, so 25 pitches';
+  }
+
+  createApp({
+    setup() {
+      const today = new Date();
+      const size = ref(JpHoliday.defaultRoundSize(today)); // 25 on weekdays, 20 on weekends and holidays
+      const reason = dayReason(today);
+      const current = ref([]);          // 'H' or 'M' for the round in progress
+      const note = ref('');
+      const rounds = ref([]);           // saved rounds, newest first
+      const loadState = ref('loading'); // loading | ready | error
+      const saving = ref(false);
+      const msg = ref('');
+
+      const done = computed(() => current.value.length);
+      const hits = computed(() => current.value.filter(c => c === 'H').length);
+      const complete = computed(() => done.value === size.value);
+      const slots = computed(() => Array.from({ length: size.value }, (_, i) => current.value[i] || ''));
+      const rate = computed(() => (done.value ? pct(hits.value, done.value) + '%' : '—'));
+      const totals = computed(() => rounds.value.reduce(
+        (a, r) => ({ h: a.h + (r.hits || 0), p: a.p + (r.pitches || 0) }), { h: 0, p: 0 }));
+      const overall = computed(() => (totals.value.p ? pct(totals.value.h, totals.value.p) + '% overall' : ''));
+      const canSave = computed(() => complete.value && !saving.value && loadState.value === 'ready');
+      const counterText = computed(() =>
+        complete.value ? 'Round complete' : 'Pitch ' + (done.value + 1) + ' of ' + size.value);
+
+      function setSize(n) {
+        if (done.value) return;
+        size.value = n;
+      }
+      function mark(c) {
+        if (complete.value) return;
+        current.value.push(c);
+        msg.value = '';
+      }
+      function undo() { current.value.pop(); }
+      function clearRound() { current.value = []; msg.value = ''; }
+
+      async function save() {
+        if (!canSave.value) return;
+        saving.value = true;
+        msg.value = '';
+        try {
+          const row = await Store.add({
+            playedAt: new Date().toISOString(),
+            pitches: size.value,
+            hits: hits.value,
+            rate: pct(hits.value, size.value),
+            pattern: current.value.join(''),
+            note: note.value.trim(),
+          });
+          rounds.value = [row, ...rounds.value];
+          current.value = [];
+          note.value = '';
+          msg.value = 'Saved.';
+        } catch (e) {
+          msg.value = 'Could not save. Your round is still here, so try again.';
+        } finally {
+          saving.value = false;
+        }
+      }
+
+      // Keyboard: H = hit, M = miss, Backspace = undo, Enter = save (not while typing a note)
+      function onKey(e) {
+        if (e.metaKey || e.ctrlKey || e.altKey) return;
+        if (e.target && e.target.closest && e.target.closest('input, textarea')) return;
+        const k = e.key.toLowerCase();
+        if (k === 'h') { e.preventDefault(); mark('H'); }
+        else if (k === 'm') { e.preventDefault(); mark('M'); }
+        else if (k === 'backspace') { e.preventDefault(); undo(); }
+        else if (k === 'enter') { e.preventDefault(); save(); }
+      }
+
+      onMounted(async () => {
+        window.addEventListener('keydown', onKey);
+        try {
+          const list = await Store.list();
+          rounds.value = list.slice().sort((a, b) => (a.playedAt < b.playedAt ? 1 : -1));
+          loadState.value = 'ready';
+        } catch (e) {
+          loadState.value = 'error';
+        }
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.register('sw.js').catch(() => {});
+        }
+      });
+      onBeforeUnmount(() => window.removeEventListener('keydown', onKey));
+
+      return {
+        size, reason, note, rounds, loadState, saving, msg,
+        done, hits, complete, slots, rate, overall, canSave, counterText,
+        setSize, mark, undo, clearRound, save, fmtDate,
+      };
+    },
+    template: `
+      <div class="wrap">
+        <header class="head">
+          <h1>Batting Machine Log</h1>
+          <p class="sub">{{ reason }}. Tap Hit or Miss after every pitch.</p>
+        </header>
+
+        <section class="card">
+          <div class="seg" role="group" aria-label="Round size">
+            <button v-for="n in [20, 25]" :key="n" type="button"
+              class="seg-btn" :class="{ on: size === n }" :disabled="done > 0"
+              @click="setSize(n)">{{ n }} pitches</button>
+          </div>
+
+          <div class="counter">
+            <div>
+              <div class="count">{{ counterText }}</div>
+              <div class="muted">{{ hits }} hit · {{ done - hits }} miss</div>
+            </div>
+            <div class="rate">{{ rate }}</div>
+          </div>
+
+          <div class="strip" aria-label="Pitches">
+            <span v-for="(c, i) in slots" :key="i" class="dot"
+              :class="c === 'H' ? 'hit' : c === 'M' ? 'miss' : ''"></span>
+          </div>
+
+          <div class="pad">
+            <button type="button" class="hit-btn" :disabled="complete" @click="mark('H')">
+              Hit<kbd>H</kbd>
+            </button>
+            <button type="button" class="miss-btn" :disabled="complete" @click="mark('M')">
+              Miss<kbd>M</kbd>
+            </button>
+          </div>
+
+          <div class="row">
+            <button type="button" class="ghost" :disabled="!done" @click="undo">Undo</button>
+            <button type="button" class="ghost" :disabled="!done" @click="clearRound">Clear</button>
+          </div>
+
+          <input class="note" v-model="note" maxlength="120"
+            placeholder="Note (optional): e.g. 60 mph, fastball">
+          <button type="button" class="save" :disabled="!canSave" @click="save">
+            {{ saving ? 'Saving…' : 'Save round' }}
+          </button>
+          <p class="msg" aria-live="polite">{{ msg }}</p>
+        </section>
+
+        <section class="card">
+          <div class="list-head">
+            <h2>Recent rounds</h2>
+            <span class="muted" v-if="rounds.length">{{ rounds.length }} rounds · {{ overall }}</span>
+          </div>
+
+          <p v-if="loadState === 'loading'" class="muted">Loading…</p>
+          <p v-else-if="loadState === 'error'" class="muted">Could not load saved rounds.</p>
+          <p v-else-if="!rounds.length" class="empty">
+            No rounds yet. Finish a round above and save it. It will show up here.
+          </p>
+          <ul v-else class="list">
+            <li v-for="r in rounds" :key="r.id" class="item">
+              <div class="item-top">
+                <span>{{ fmtDate(r.playedAt) }}</span>
+                <span class="score">{{ r.hits }}/{{ r.pitches }} · {{ r.rate }}%</span>
+              </div>
+              <div class="strip small">
+                <span v-for="(c, i) in (r.pattern || '').split('')" :key="i" class="dot"
+                  :class="c === 'H' ? 'hit' : 'miss'"></span>
+              </div>
+              <div v-if="r.note" class="item-note">{{ r.note }}</div>
+            </li>
+          </ul>
+        </section>
+      </div>
+    `,
+  }).mount('#app');
+</script>
+</body>
+</html>
