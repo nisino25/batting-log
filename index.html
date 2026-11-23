@@ -250,6 +250,22 @@
     .del.armed { border-color: var(--danger); color: var(--danger); font-weight: 700; }
     .store-note { font-size: 12px; color: var(--muted); margin: 0; }
 
+    /* 球速 */
+    .spd-row { display: flex; flex-direction: column; gap: 8px; }
+    .spd-chips { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+    .spd-btn {
+      font: inherit;
+      font-weight: 700;
+      padding: 10px 0;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: var(--bg);
+      color: var(--fg);
+      cursor: pointer;
+      font-variant-numeric: tabular-nums;
+    }
+    .spd-btn.on { background: var(--fg); border-color: var(--fg); color: var(--card); }
+
     /* アドバイス（確認リスト） */
     .progress { display: flex; flex-direction: column; gap: 6px; }
     .progress-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 14px; }
@@ -386,11 +402,29 @@
     try { if (navigator.vibrate) navigator.vibrate(8); } catch (e) {}
   }
 
+  // 球速（km/h）。最後に選んだ速度を次回も使う。
+  const SPEEDS = [80, 90, 100, 110, 120];
+  const SPEED_KEY = 'batting-log-speed';
+  function loadSpeed() {
+    try {
+      const v = Number(localStorage.getItem(SPEED_KEY));
+      return SPEEDS.includes(v) ? v : 100;
+    } catch (e) { return 100; }
+  }
+  function storeSpeed(v) {
+    try { localStorage.setItem(SPEED_KEY, String(v)); } catch (e) {}
+  }
+
   createApp({
     setup() {
       const tab = ref('record');        // record | advice
       const today = new Date();
       const size = ref(JpHoliday.defaultRoundSize(today));
+      const speed = ref(loadSpeed());
+      function setSpeed(v) {
+        speed.value = v;
+        storeSpeed(v);
+      }
       const reason = dayReason(today);
       const cells = ref(Array(size.value).fill('0'));
       const note = ref('');
@@ -473,6 +507,7 @@
             hits: s.hits,
             homeRuns: s.homeRuns,
             rate: s.rate,
+            speed: speed.value,
             note: note.value.trim(),
           });
           rounds.value = [row, ...rounds.value];
@@ -515,7 +550,7 @@
       onBeforeUnmount(() => clearTimeout(armTimer));
 
       return {
-        tab, size, reason, cells, note, rounds, loadState, saving, msg, armed,
+        tab, size, speed, speeds: SPEEDS, setSpeed, reason, cells, note, rounds, loadState, saving, msg, armed,
         cur, overall, todayTotal, canSave,
         ADVICE, checks, checkDone, checkPct, toggleCheck, resetChecks, ADVICE_TOTAL,
         setSize, tap, cellClass, cellAria, reset, save, deleteRound, fmtDate, stats,
@@ -543,6 +578,14 @@
               <button v-for="n in [20, 25]" :key="n" type="button"
                 class="seg-btn" :class="{ on: size === n }"
                 @click="setSize(n)">{{ n }}球</button>
+            </div>
+
+            <div class="spd-row">
+              <span class="muted">球速（km/h）</span>
+              <div class="spd-chips" role="group" aria-label="球速">
+                <button v-for="s in speeds" :key="s" type="button" class="spd-btn"
+                  :class="{ on: speed === s }" @click="setSpeed(s)">{{ s }}</button>
+              </div>
             </div>
 
             <ul class="legend">
@@ -609,7 +652,7 @@
                     :class="c === '2' ? 'hr' : c === '1' ? 'hit' : ''"></span>
                 </div>
                 <div class="item-foot">
-                  <span class="item-note">{{ r.note }}</span>
+                  <span class="item-note">{{ r.speed ? r.speed + 'km/h' : '' }}{{ r.speed && r.note ? '・' : '' }}{{ r.note }}</span>
                   <button type="button" class="del" :class="{ armed: armed === 'del-' + r.id }"
                     @click="deleteRound(r.id)">
                     {{ armed === 'del-' + r.id ? 'もう一度で削除' : '削除' }}
