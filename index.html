@@ -126,6 +126,7 @@
     }
     .muted { color: var(--muted); font-size: 13px; }
 
+    /* 球数・球速の切り替え */
     .seg {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -147,36 +148,61 @@
     }
     .seg-btn.on { background: var(--card); color: var(--fg); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12); }
 
-    .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 0; padding: 0; list-style: none; font-size: 13px; color: var(--muted); }
-    .legend li { display: flex; align-items: center; gap: 6px; }
-    .chip { width: 14px; height: 14px; border-radius: 4px; border: 1px solid var(--line); background: var(--card); display: inline-block; }
-    .chip.hit { background: var(--hit); border-color: var(--hit); }
-    .chip.hr { background: var(--hr); border-color: var(--hr); }
-
-    .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
-    .cell {
+    .spd-row { display: flex; flex-direction: column; gap: 8px; }
+    .spd-chips { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+    .spd-btn {
       font: inherit;
-      min-height: 68px;
+      font-weight: 700;
+      padding: 10px 0;
+      border-radius: 10px;
       border: 1px solid var(--line);
-      border-radius: 12px;
-      background: var(--card);
+      background: var(--bg);
       color: var(--fg);
+      cursor: pointer;
+      font-variant-numeric: tabular-nums;
+    }
+    .spd-btn.on { background: var(--fg); border-color: var(--fg); color: var(--card); }
+
+    /* ヒット数・HR数のカウンター */
+    .counters { display: flex; flex-direction: column; gap: 10px; }
+    .counter-row {
       display: flex;
-      flex-direction: column;
+      justify-content: space-between;
       align-items: center;
-      justify-content: center;
-      gap: 2px;
+      gap: 12px;
+      background: var(--tile);
+      border-radius: 14px;
+      padding: 12px;
+    }
+    .counter-label { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    .counter-label strong { font-size: 17px; }
+    .counter-label span { font-size: 12px; color: var(--muted); }
+    .stepper { display: flex; align-items: center; gap: 10px; flex: none; }
+    .step {
+      width: 60px;
+      height: 60px;
+      border: 0;
+      border-radius: 16px;
+      font: inherit;
+      font-size: 30px;
+      font-weight: 700;
+      background: var(--card);
+      border: 1px solid var(--line);
+      color: var(--fg);
       cursor: pointer;
       user-select: none;
-      transition: transform 0.08s ease, background-color 0.15s ease;
     }
-    .cell:active { transform: scale(0.94); }
-    .cell .n { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
-    .cell .lbl { font-size: 15px; font-weight: 700; min-height: 1.2em; }
-    .cell.hit { background: var(--hit); border-color: var(--hit); color: var(--on-hit); }
-    .cell.hit .n { color: var(--on-hit); opacity: 0.85; }
-    .cell.hr { background: var(--hr); border-color: var(--hr); color: var(--on-hr); }
-    .cell.hr .n { color: var(--on-hr); opacity: 0.85; }
+    .step.plus { background: var(--hit); border-color: var(--hit); color: var(--on-hit); }
+    .step:active { transform: scale(0.95); }
+    .step:disabled { opacity: 0.35; cursor: default; transform: none; }
+    .step-v {
+      min-width: 56px;
+      text-align: center;
+      font-size: 40px;
+      font-weight: 800;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
 
     .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
     .tile { background: var(--tile); border-radius: 12px; padding: 10px 6px; text-align: center; }
@@ -222,11 +248,6 @@
     .save:disabled { opacity: 0.35; cursor: default; }
     .msg { margin: 0; min-height: 1.3em; font-size: 14px; color: var(--muted); text-align: center; }
 
-    .strip { display: flex; flex-wrap: wrap; gap: 4px; }
-    .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--line); flex: none; }
-    .dot.hit { background: var(--hit); }
-    .dot.hr { background: var(--hr); }
-
     .list-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
     .today { background: var(--tile); border-radius: 12px; padding: 10px 12px; font-size: 14px; }
     .empty { color: var(--muted); margin: 0; }
@@ -249,22 +270,6 @@
     }
     .del.armed { border-color: var(--danger); color: var(--danger); font-weight: 700; }
     .store-note { font-size: 12px; color: var(--muted); margin: 0; }
-
-    /* 球速 */
-    .spd-row { display: flex; flex-direction: column; gap: 8px; }
-    .spd-chips { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
-    .spd-btn {
-      font: inherit;
-      font-weight: 700;
-      padding: 10px 0;
-      border-radius: 10px;
-      border: 1px solid var(--line);
-      background: var(--bg);
-      color: var(--fg);
-      cursor: pointer;
-      font-variant-numeric: tabular-nums;
-    }
-    .spd-btn.on { background: var(--fg); border-color: var(--fg); color: var(--card); }
 
     /* アドバイス（確認リスト） */
     .progress { display: flex; flex-direction: column; gap: 6px; }
@@ -303,11 +308,6 @@
 <script>
   const { createApp, ref, computed, onMounted, onBeforeUnmount } = Vue;
 
-  // 結果の値: '0' = ヒットなし, '1' = ヒット, '2' = ホームラン
-  // タップは 0 → 1 → 2 → 0 の順に切り替わる（1回=ヒット、2回=HR、3回目で解除）
-  const CYCLE = ['0', '1', '2'];
-  const LABEL = { '0': '', '1': 'ヒット', '2': 'HR' };
-
   // ---- 保存（いまはこのブラウザ内）---------------------------------------
   // 将来クラウドのDBに変えるときは list / add / remove の中身だけ差し替える。
   const Store = {
@@ -315,8 +315,8 @@
     async list() {
       let rows;
       try { rows = JSON.parse(localStorage.getItem(this.KEY) || '[]'); } catch (e) { rows = []; }
-      // 以前の H / M 形式を 1 / 0 に読み替える
-      return rows.map(r => ({ ...r, pattern: (r.pattern || '').replace(/H/g, '1').replace(/M/g, '0') }));
+      // 初期版の H / M 形式を 1 / 0 に読み替える
+      return rows.map(r => (r.pattern ? { ...r, pattern: r.pattern.replace(/H/g, '1').replace(/M/g, '0') } : r));
     },
     async add(row) {
       const rows = await this.list();
@@ -369,18 +369,38 @@
     try { localStorage.setItem(ADVICE_KEY, JSON.stringify(s)); } catch (e) {}
   }
 
-  // ---- 集計（結果の並びから計算する）---------------------------------------
-  function stats(pattern) {
-    const s = (pattern || '').split('');
-    const homeRuns = s.filter(c => c === '2').length;
-    const singles = s.filter(c => c === '1').length;
-    const hits = singles + homeRuns;
-    const pitches = s.length;
+  // ---- 球速（km/h）。最後に選んだ速度を次回も使う -------------------------
+  const SPEEDS = [80, 90, 100, 110, 120];
+  const SPEED_KEY = 'batting-log-speed';
+  function loadSpeed() {
+    try {
+      const v = Number(localStorage.getItem(SPEED_KEY));
+      return SPEEDS.includes(v) ? v : 100;
+    } catch (e) { return 100; }
+  }
+  function storeSpeed(v) {
+    try { localStorage.setItem(SPEED_KEY, String(v)); } catch (e) {}
+  }
+
+  // ---- 集計 -----------------------------------------------------------------
+  // 新しい記録は pitches / hits / homeRuns を持つ。
+  // 以前のマス目形式（pattern）の記録も読めるように、そちらも対応する。
+  function rowStats(r) {
+    if (r.pattern) {
+      const s = r.pattern.split('');
+      const homeRuns = s.filter(c => c === '2').length;
+      const hits = s.filter(c => c === '1' || c === '2').length;
+      const pitches = s.length;
+      return { pitches, hits, homeRuns, rate: pitches ? Math.round((hits / pitches) * 100) : 0 };
+    }
+    const pitches = r.pitches || 0;
+    const hits = r.hits || 0;
+    const homeRuns = r.homeRuns || 0;
     return { pitches, hits, homeRuns, rate: pitches ? Math.round((hits / pitches) * 100) : 0 };
   }
   function sumStats(list) {
     const t = list.reduce((a, r) => {
-      const s = stats(r.pattern);
+      const s = rowStats(r);
       return { p: a.p + s.pitches, h: a.h + s.hits, n: a.n + 1 };
     }, { p: 0, h: 0, n: 0 });
     return { rounds: t.n, rate: t.p ? Math.round((t.h / t.p) * 100) : 0, pitches: t.p, hits: t.h };
@@ -402,31 +422,15 @@
     try { if (navigator.vibrate) navigator.vibrate(8); } catch (e) {}
   }
 
-  // 球速（km/h）。最後に選んだ速度を次回も使う。
-  const SPEEDS = [80, 90, 100, 110, 120];
-  const SPEED_KEY = 'batting-log-speed';
-  function loadSpeed() {
-    try {
-      const v = Number(localStorage.getItem(SPEED_KEY));
-      return SPEEDS.includes(v) ? v : 100;
-    } catch (e) { return 100; }
-  }
-  function storeSpeed(v) {
-    try { localStorage.setItem(SPEED_KEY, String(v)); } catch (e) {}
-  }
-
   createApp({
     setup() {
       const tab = ref('record');        // record | advice
       const today = new Date();
       const size = ref(JpHoliday.defaultRoundSize(today));
-      const speed = ref(loadSpeed());
-      function setSpeed(v) {
-        speed.value = v;
-        storeSpeed(v);
-      }
       const reason = dayReason(today);
-      const cells = ref(Array(size.value).fill('0'));
+      const speed = ref(loadSpeed());
+      const hits = ref(0);              // ヒット数（HRを含む）
+      const homeRuns = ref(0);          // うちホームラン
       const note = ref('');
       const rounds = ref([]);
       const loadState = ref('loading'); // loading | ready | error
@@ -449,10 +453,13 @@
         msg.value = 'チェックをリセットしました';
       }
 
-      const cur = computed(() => stats(cells.value.join('')));
+      const cur = computed(() => {
+        const rate = size.value ? Math.round((hits.value / size.value) * 100) : 0;
+        return { hits: hits.value, homeRuns: homeRuns.value, singles: hits.value - homeRuns.value, rate };
+      });
       const overall = computed(() => sumStats(rounds.value));
       const todayTotal = computed(() => sumStats(rounds.value.filter(r => sameDay(new Date(r.playedAt), new Date()))));
-      const canSave = computed(() => !saving.value && loadState.value === 'ready' && cur.value.pitches > 0);
+      const canSave = computed(() => !saving.value && loadState.value === 'ready');
 
       // 1回目は「もう一度で実行」の表示にし、3秒以内の2回目で実行する
       function confirmTap(key, action) {
@@ -470,22 +477,40 @@
 
       function setSize(n) {
         size.value = n;
-        cells.value = Array(n).fill('0');
+        hits.value = 0;
+        homeRuns.value = 0;
         msg.value = '';
       }
-      function tap(i) {
+      function setSpeed(v) {
+        speed.value = v;
+        storeSpeed(v);
+      }
+
+      function incHits() {
         buzz();
-        const a = cells.value.slice();
-        a[i] = CYCLE[(CYCLE.indexOf(a[i]) + 1) % CYCLE.length];
-        cells.value = a;
+        if (hits.value < size.value) hits.value++;
         msg.value = '';
       }
-      function cellClass(v) { return v === '1' ? 'hit' : v === '2' ? 'hr' : ''; }
-      function cellAria(i, v) {
-        return (i + 1) + '球目: ' + (v === '2' ? 'ホームラン' : v === '1' ? 'ヒット' : 'ヒットなし');
+      function decHits() {
+        buzz();
+        if (hits.value > 0) hits.value--;
+        if (homeRuns.value > hits.value) homeRuns.value = hits.value;
+        msg.value = '';
       }
+      function incHR() {
+        buzz();
+        if (homeRuns.value < hits.value) homeRuns.value++;
+        msg.value = '';
+      }
+      function decHR() {
+        buzz();
+        if (homeRuns.value > 0) homeRuns.value--;
+        msg.value = '';
+      }
+
       function resetRound() {
-        cells.value = Array(size.value).fill('0');
+        hits.value = 0;
+        homeRuns.value = 0;
         note.value = '';
         msg.value = '入力をリセットしました';
       }
@@ -498,20 +523,19 @@
         saving.value = true;
         msg.value = '';
         try {
-          const pattern = cells.value.join('');
-          const s = stats(pattern);
+          const s = rowStats({ pitches: size.value, hits: hits.value, homeRuns: homeRuns.value });
           const row = await Store.add({
             playedAt: new Date().toISOString(),
             pitches: size.value,
-            pattern,
-            hits: s.hits,
-            homeRuns: s.homeRuns,
+            hits: hits.value,
+            homeRuns: homeRuns.value,
             rate: s.rate,
             speed: speed.value,
             note: note.value.trim(),
           });
           rounds.value = [row, ...rounds.value];
-          cells.value = Array(size.value).fill('0');
+          hits.value = 0;
+          homeRuns.value = 0;
           note.value = '';
           msg.value = '保存しました';
         } catch (e) {
@@ -550,17 +574,17 @@
       onBeforeUnmount(() => clearTimeout(armTimer));
 
       return {
-        tab, size, speed, speeds: SPEEDS, setSpeed, reason, cells, note, rounds, loadState, saving, msg, armed,
+        tab, size, speed, speeds: SPEEDS, setSpeed, reason, hits, homeRuns, note, rounds, loadState, saving, msg, armed,
         cur, overall, todayTotal, canSave,
         ADVICE, checks, checkDone, checkPct, toggleCheck, resetChecks, ADVICE_TOTAL,
-        setSize, tap, cellClass, cellAria, reset, save, deleteRound, fmtDate, stats,
+        setSize, incHits, decHits, incHR, decHR, reset, save, deleteRound, fmtDate, rowStats,
       };
     },
     template: `
       <div class="wrap">
         <header class="head">
           <h1>バッティングマシン記録</h1>
-          <p class="sub" v-if="tab === 'record'">{{ reason }}。打った球をタップしてください</p>
+          <p class="sub" v-if="tab === 'record'">{{ reason }}。ヒットの数を入れてください</p>
           <p class="sub" v-else>打席の前と、ラウンドの途中で確認してください</p>
         </header>
 
@@ -588,25 +612,40 @@
               </div>
             </div>
 
-            <ul class="legend">
-              <li><span class="chip"></span>タップなし</li>
-              <li><span class="chip hit"></span>1回＝ヒット</li>
-              <li><span class="chip hr"></span>2回＝ホームラン</li>
-              <li>3回で解除</li>
-            </ul>
+            <div class="counters">
+              <div class="counter-row">
+                <div class="counter-label">
+                  <strong>ヒット</strong>
+                  <span>{{ size }}球中（ホームランも含む）</span>
+                </div>
+                <div class="stepper">
+                  <button type="button" class="step" aria-label="ヒットを1つ減らす"
+                    :disabled="hits === 0" @click="decHits">−</button>
+                  <span class="step-v">{{ hits }}</span>
+                  <button type="button" class="step plus" aria-label="ヒットを1つ増やす"
+                    :disabled="hits >= size" @click="incHits">＋</button>
+                </div>
+              </div>
 
-            <div class="grid">
-              <button v-for="(v, i) in cells" :key="i" type="button" class="cell"
-                :class="cellClass(v)" :aria-label="cellAria(i, v)" @click="tap(i)">
-                <span class="n">{{ i + 1 }}</span>
-                <span class="lbl">{{ v === '1' ? 'ヒット' : v === '2' ? 'HR' : '' }}</span>
-              </button>
+              <div class="counter-row">
+                <div class="counter-label">
+                  <strong>うちホームラン</strong>
+                  <span>ヒットの中の本数</span>
+                </div>
+                <div class="stepper">
+                  <button type="button" class="step" aria-label="ホームランを1つ減らす"
+                    :disabled="homeRuns === 0" @click="decHR">−</button>
+                  <span class="step-v">{{ homeRuns }}</span>
+                  <button type="button" class="step plus" aria-label="ホームランを1つ増やす"
+                    :disabled="homeRuns >= hits" @click="incHR">＋</button>
+                </div>
+              </div>
             </div>
 
             <div class="summary">
-              <div class="tile"><div class="stat-v">{{ cur.hits }}</div><div class="stat-l">ヒット</div></div>
-              <div class="tile"><div class="stat-v">{{ cur.homeRuns }}</div><div class="stat-l">ホームラン</div></div>
               <div class="tile"><div class="stat-v">{{ cur.rate }}%</div><div class="stat-l">ヒット率</div></div>
+              <div class="tile"><div class="stat-v">{{ cur.singles }}</div><div class="stat-l">単打</div></div>
+              <div class="tile"><div class="stat-v">{{ cur.homeRuns }}</div><div class="stat-l">ホームラン</div></div>
             </div>
 
             <div class="btn-row">
@@ -616,7 +655,7 @@
             </div>
 
             <input class="note" v-model="note" maxlength="120"
-              placeholder="メモ（任意）例：60km/h、ストレート">
+              placeholder="メモ（任意）例：ストレート、タイミング良し">
             <button type="button" class="save" :disabled="!canSave" @click="save">
               {{ saving ? '保存中…' : size + '球のラウンドを保存' }}
             </button>
@@ -643,13 +682,9 @@
                 <div class="item-top">
                   <span>{{ fmtDate(r.playedAt) }}</span>
                   <span class="score">
-                    {{ stats(r.pattern).hits }}/{{ stats(r.pattern).pitches }}球
-                    （HR {{ stats(r.pattern).homeRuns }}）・{{ stats(r.pattern).rate }}%
+                    {{ rowStats(r).hits }}/{{ rowStats(r).pitches }}球
+                    （HR {{ rowStats(r).homeRuns }}）・{{ rowStats(r).rate }}%
                   </span>
-                </div>
-                <div class="strip">
-                  <span v-for="(c, i) in (r.pattern || '').split('')" :key="i" class="dot"
-                    :class="c === '2' ? 'hr' : c === '1' ? 'hit' : ''"></span>
                 </div>
                 <div class="item-foot">
                   <span class="item-note">{{ r.speed ? r.speed + 'km/h' : '' }}{{ r.speed && r.note ? '・' : '' }}{{ r.note }}</span>
