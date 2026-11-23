@@ -1,6 +1,6 @@
 // オフライン対応: まずネットワーク、だめならキャッシュを使う。
 // キャッシュ名を変えると、古いキャッシュ（英語版など）は次回読み込みで削除される。
-const CACHE = 'batting-log-v2';
+const CACHE = 'batting-log-v3';
 const ASSETS = [
   './',
   './index.html',
