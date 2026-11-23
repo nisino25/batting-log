@@ -1,18 +1,18 @@
 <!doctype html>
-<html lang="en">
+<html lang="ja">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#111310" media="(prefers-color-scheme: dark)">
   <meta name="theme-color" content="#f3f2ee" media="(prefers-color-scheme: light)">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="Batting Log">
-  <title>Batting Machine Log</title>
+  <meta name="apple-mobile-web-app-title" content="バッティング記録">
+  <title>バッティングマシン記録</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
   <style>
-    /* Colors are tokens: light first, then dark (system or explicit). */
+    /* 色はすべてトークン。ライトを基本に、ダークで上書き。 */
     :root {
       color-scheme: light;
       --bg: #f3f2ee;
@@ -20,10 +20,10 @@
       --fg: #1c2019;
       --muted: #6c7269;
       --line: #e3e2db;
-      --todo: #dcdbd3;
       --hit: #1d7a4b;
-      --miss: #b4412c;
-      --on-accent: #ffffff;
+      --on-hit: #ffffff;
+      --hr: #a86f00;
+      --on-hr: #ffffff;
     }
     @media (prefers-color-scheme: dark) {
       :root:not([data-theme="light"]) {
@@ -33,10 +33,10 @@
         --fg: #ebeae4;
         --muted: #9ca296;
         --line: #2c3029;
-        --todo: #2e332c;
         --hit: #4fc38a;
-        --miss: #ec7f67;
-        --on-accent: #0f1410;
+        --on-hit: #0f1410;
+        --hr: #f0b84a;
+        --on-hr: #1a1300;
       }
     }
     :root[data-theme="dark"] {
@@ -46,10 +46,10 @@
       --fg: #ebeae4;
       --muted: #9ca296;
       --line: #2c3029;
-      --todo: #2e332c;
       --hit: #4fc38a;
-      --miss: #ec7f67;
-      --on-accent: #0f1410;
+      --on-hit: #0f1410;
+      --hr: #f0b84a;
+      --on-hr: #1a1300;
     }
 
     body {
@@ -106,51 +106,42 @@
       cursor: pointer;
     }
     .seg-btn.on { background: var(--card); color: var(--fg); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12); }
-    .seg-btn:disabled:not(.on) { opacity: 0.4; cursor: default; }
 
-    .counter { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; }
-    .count { font-size: 20px; font-weight: 700; }
-    .rate { font-size: 40px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
-    .strip { display: flex; flex-wrap: wrap; gap: 6px; }
-    .strip.small { gap: 4px; }
-    .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--todo); flex: none; }
-    .strip.small .dot { width: 10px; height: 10px; }
-    .dot.hit { background: var(--hit); }
-    .dot.miss { background: var(--miss); }
-
-    .pad { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .hit-btn, .miss-btn {
+    .legend { font-size: 13px; color: var(--muted); margin: 0; }
+    .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+    .cell {
       font: inherit;
-      min-height: 96px;
-      border: 0;
-      border-radius: 14px;
-      font-size: 26px;
-      font-weight: 700;
-      color: var(--on-accent);
+      min-height: 62px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--card);
+      color: var(--fg);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 4px;
+      gap: 2px;
       cursor: pointer;
       touch-action: manipulation;
+      user-select: none;
     }
-    .hit-btn { background: var(--hit); }
-    .miss-btn { background: var(--miss); }
-    .hit-btn:disabled, .miss-btn:disabled { opacity: 0.35; cursor: default; }
-    kbd {
-      font: inherit;
-      font-size: 11px;
-      font-weight: 600;
-      opacity: 0.85;
-      border: 1px solid currentColor;
-      border-radius: 4px;
-      padding: 0 5px;
-    }
+    .cell .n { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+    .cell .lbl { font-size: 15px; font-weight: 700; min-height: 1.2em; }
+    .cell.hit { background: var(--hit); border-color: var(--hit); color: var(--on-hit); }
+    .cell.hit .n { color: var(--on-hit); opacity: 0.85; }
+    .cell.hr { background: var(--hr); border-color: var(--hr); color: var(--on-hr); }
+    .cell.hr .n { color: var(--on-hr); opacity: 0.85; }
 
-    .row { display: flex; gap: 8px; }
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      text-align: center;
+    }
+    .stat-v { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.2; }
+    .stat-l { font-size: 12px; color: var(--muted); }
+
     .ghost {
-      flex: 1;
       font: inherit;
       font-size: 14px;
       padding: 10px;
@@ -186,6 +177,11 @@
     .save:disabled { opacity: 0.35; cursor: default; }
     .msg { margin: 0; min-height: 1.3em; font-size: 14px; color: var(--muted); text-align: center; }
 
+    .strip { display: flex; flex-wrap: wrap; gap: 4px; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--line); flex: none; }
+    .dot.hit { background: var(--hit); }
+    .dot.hr { background: var(--hr); }
+
     .list-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
     .empty { color: var(--muted); margin: 0; }
     .list { list-style: none; margin: 0; padding: 0; }
@@ -201,15 +197,22 @@
 <script src="https://unpkg.com/vue@3.5.13/dist/vue.global.prod.js"></script>
 <script src="jp-holiday.js"></script>
 <script>
-  const { createApp, ref, computed, onMounted, onBeforeUnmount } = Vue;
+  const { createApp, ref, computed, onMounted } = Vue;
 
-  // ---- Storage ----------------------------------------------------------
-  // Rounds are kept in this browser for now. To share them across devices,
-  // replace list/add with calls to a hosted database (same shapes).
+  // 結果の値: '0' = ヒットなし, '1' = ヒット, '2' = ホームラン
+  // タップは 0 → 1 → 2 → 0 の順に切り替わる（1回=ヒット、2回=HR、3回目で解除）
+  const CYCLE = ['0', '1', '2'];
+  const LABEL = { '0': '', '1': 'ヒット', '2': 'HR' };
+
+  // ---- 保存（いまはこのブラウザ内）---------------------------------------
+  // 将来クラウドのDBに変えるときは list / add の中身だけ差し替える。
   const Store = {
     KEY: 'batting-log-rounds',
     async list() {
-      try { return JSON.parse(localStorage.getItem(this.KEY) || '[]'); } catch (e) { return []; }
+      let rows;
+      try { rows = JSON.parse(localStorage.getItem(this.KEY) || '[]'); } catch (e) { rows = []; }
+      // 以前の H / M 形式を 1 / 0 に読み替える
+      return rows.map(r => ({ ...r, pattern: (r.pattern || '').replace(/H/g, '1').replace(/M/g, '0') }));
     },
     async add(row) {
       const rows = await this.list();
@@ -220,95 +223,100 @@
     },
   };
 
-  // ---- Helpers ----------------------------------------------------------
-  function pct(h, p) { return p ? Math.round((h / p) * 100) : 0; }
+  // ---- 集計（結果の並びから計算する）---------------------------------------
+  function stats(pattern) {
+    const s = (pattern || '').split('');
+    const homeRuns = s.filter(c => c === '2').length;
+    const singles = s.filter(c => c === '1').length;
+    const hits = singles + homeRuns;
+    const pitches = s.length;
+    return { pitches, hits, homeRuns, rate: pitches ? Math.round((hits / pitches) * 100) : 0 };
+  }
   function fmtDate(iso) {
     const d = new Date(iso);
-    return isNaN(d) ? '' : d.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    return isNaN(d) ? '' : d.toLocaleString('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
   }
   function dayReason(date) {
-    const d = date || new Date();
-    if (JpHoliday.isJpHoliday(d)) return 'Holiday today, so 20 pitches';
-    if (d.getDay() === 0 || d.getDay() === 6) return 'Weekend, so 20 pitches';
-    return 'Weekday, so 25 pitches';
+    if (JpHoliday.isJpHoliday(date)) return '祝日なので20球';
+    const w = date.getDay();
+    if (w === 0 || w === 6) return '週末なので20球';
+    return '平日なので25球';
   }
 
   createApp({
     setup() {
       const today = new Date();
-      const size = ref(JpHoliday.defaultRoundSize(today)); // 25 on weekdays, 20 on weekends and holidays
+      const size = ref(JpHoliday.defaultRoundSize(today));
       const reason = dayReason(today);
-      const current = ref([]);          // 'H' or 'M' for the round in progress
+      const cells = ref(Array(size.value).fill('0'));
       const note = ref('');
-      const rounds = ref([]);           // saved rounds, newest first
+      const rounds = ref([]);
       const loadState = ref('loading'); // loading | ready | error
       const saving = ref(false);
       const msg = ref('');
 
-      const done = computed(() => current.value.length);
-      const hits = computed(() => current.value.filter(c => c === 'H').length);
-      const complete = computed(() => done.value === size.value);
-      const slots = computed(() => Array.from({ length: size.value }, (_, i) => current.value[i] || ''));
-      const rate = computed(() => (done.value ? pct(hits.value, done.value) + '%' : '—'));
-      const totals = computed(() => rounds.value.reduce(
-        (a, r) => ({ h: a.h + (r.hits || 0), p: a.p + (r.pitches || 0) }), { h: 0, p: 0 }));
-      const overall = computed(() => (totals.value.p ? pct(totals.value.h, totals.value.p) + '% overall' : ''));
-      const canSave = computed(() => complete.value && !saving.value && loadState.value === 'ready');
-      const counterText = computed(() =>
-        complete.value ? 'Round complete' : 'Pitch ' + (done.value + 1) + ' of ' + size.value);
+      const cur = computed(() => stats(cells.value.join('')));
+      const overallStats = computed(() => {
+        const t = rounds.value.reduce((a, r) => {
+          const s = stats(r.pattern);
+          return { p: a.p + s.pitches, h: a.h + s.hits };
+        }, { p: 0, h: 0 });
+        return t.p ? Math.round((t.h / t.p) * 100) + '%' : '';
+      });
+      const canSave = computed(() => !saving.value && loadState.value === 'ready' && cur.value.pitches > 0);
 
       function setSize(n) {
-        if (done.value) return;
         size.value = n;
-      }
-      function mark(c) {
-        if (complete.value) return;
-        current.value.push(c);
+        cells.value = Array(n).fill('0');
         msg.value = '';
       }
-      function undo() { current.value.pop(); }
-      function clearRound() { current.value = []; msg.value = ''; }
+      function tap(i) {
+        const a = cells.value.slice();
+        a[i] = CYCLE[(CYCLE.indexOf(a[i]) + 1) % CYCLE.length];
+        cells.value = a;
+        msg.value = '';
+      }
+      function cellClass(v) { return v === '1' ? 'hit' : v === '2' ? 'hr' : ''; }
+      function cellLabel(v) { return LABEL[v]; }
+      function cellAria(i, v) {
+        return (i + 1) + '球目: ' + (v === '2' ? 'ホームラン' : v === '1' ? 'ヒット' : 'ヒットなし');
+      }
+      function reset() {
+        cells.value = Array(size.value).fill('0');
+        msg.value = '';
+      }
 
       async function save() {
         if (!canSave.value) return;
         saving.value = true;
         msg.value = '';
         try {
+          const pattern = cells.value.join('');
+          const s = stats(pattern);
           const row = await Store.add({
             playedAt: new Date().toISOString(),
             pitches: size.value,
-            hits: hits.value,
-            rate: pct(hits.value, size.value),
-            pattern: current.value.join(''),
+            pattern,
+            hits: s.hits,
+            homeRuns: s.homeRuns,
+            rate: s.rate,
             note: note.value.trim(),
           });
           rounds.value = [row, ...rounds.value];
-          current.value = [];
+          cells.value = Array(size.value).fill('0');
           note.value = '';
-          msg.value = 'Saved.';
+          msg.value = '保存しました';
         } catch (e) {
-          msg.value = 'Could not save. Your round is still here, so try again.';
+          msg.value = '保存できませんでした。もう一度お試しください';
         } finally {
           saving.value = false;
         }
       }
 
-      // Keyboard: H = hit, M = miss, Backspace = undo, Enter = save (not while typing a note)
-      function onKey(e) {
-        if (e.metaKey || e.ctrlKey || e.altKey) return;
-        if (e.target && e.target.closest && e.target.closest('input, textarea')) return;
-        const k = e.key.toLowerCase();
-        if (k === 'h') { e.preventDefault(); mark('H'); }
-        else if (k === 'm') { e.preventDefault(); mark('M'); }
-        else if (k === 'backspace') { e.preventDefault(); undo(); }
-        else if (k === 'enter') { e.preventDefault(); save(); }
-      }
-
       onMounted(async () => {
-        window.addEventListener('keydown', onKey);
         try {
           const list = await Store.list();
-          rounds.value = list.slice().sort((a, b) => (a.playedAt < b.playedAt ? 1 : -1));
+          rounds.value = list.sort((a, b) => (a.playedAt < b.playedAt ? 1 : -1));
           loadState.value = 'ready';
         } catch (e) {
           loadState.value = 'error';
@@ -317,83 +325,76 @@
           navigator.serviceWorker.register('sw.js').catch(() => {});
         }
       });
-      onBeforeUnmount(() => window.removeEventListener('keydown', onKey));
 
       return {
-        size, reason, note, rounds, loadState, saving, msg,
-        done, hits, complete, slots, rate, overall, canSave, counterText,
-        setSize, mark, undo, clearRound, save, fmtDate,
+        size, reason, cells, note, rounds, loadState, saving, msg,
+        cur, overallStats, canSave,
+        setSize, tap, cellClass, cellLabel, cellAria, reset, save, fmtDate, stats,
       };
     },
     template: `
       <div class="wrap">
         <header class="head">
-          <h1>Batting Machine Log</h1>
-          <p class="sub">{{ reason }}. Tap Hit or Miss after every pitch.</p>
+          <h1>バッティングマシン記録</h1>
+          <p class="sub">{{ reason }}。打ったボールをタップしてください</p>
         </header>
 
         <section class="card">
-          <div class="seg" role="group" aria-label="Round size">
+          <div class="seg" role="group" aria-label="球数">
             <button v-for="n in [20, 25]" :key="n" type="button"
-              class="seg-btn" :class="{ on: size === n }" :disabled="done > 0"
-              @click="setSize(n)">{{ n }} pitches</button>
+              class="seg-btn" :class="{ on: size === n }"
+              @click="setSize(n)">{{ n }}球</button>
           </div>
 
-          <div class="counter">
-            <div>
-              <div class="count">{{ counterText }}</div>
-              <div class="muted">{{ hits }} hit · {{ done - hits }} miss</div>
-            </div>
-            <div class="rate">{{ rate }}</div>
-          </div>
+          <p class="legend">タップで切り替え：1回＝ヒット、2回＝ホームラン、3回目で解除</p>
 
-          <div class="strip" aria-label="Pitches">
-            <span v-for="(c, i) in slots" :key="i" class="dot"
-              :class="c === 'H' ? 'hit' : c === 'M' ? 'miss' : ''"></span>
-          </div>
-
-          <div class="pad">
-            <button type="button" class="hit-btn" :disabled="complete" @click="mark('H')">
-              Hit<kbd>H</kbd>
-            </button>
-            <button type="button" class="miss-btn" :disabled="complete" @click="mark('M')">
-              Miss<kbd>M</kbd>
+          <div class="grid">
+            <button v-for="(v, i) in cells" :key="i" type="button" class="cell"
+              :class="cellClass(v)" :aria-label="cellAria(i, v)" @click="tap(i)">
+              <span class="n">{{ i + 1 }}</span>
+              <span class="lbl">{{ cellLabel(v) }}</span>
             </button>
           </div>
 
-          <div class="row">
-            <button type="button" class="ghost" :disabled="!done" @click="undo">Undo</button>
-            <button type="button" class="ghost" :disabled="!done" @click="clearRound">Clear</button>
+          <div class="summary">
+            <div><div class="stat-v">{{ cur.hits }}</div><div class="stat-l">ヒット</div></div>
+            <div><div class="stat-v">{{ cur.homeRuns }}</div><div class="stat-l">ホームラン</div></div>
+            <div><div class="stat-v">{{ cur.rate }}%</div><div class="stat-l">ヒット率</div></div>
           </div>
+
+          <button type="button" class="ghost" @click="reset">全部ヒットなしに戻す</button>
 
           <input class="note" v-model="note" maxlength="120"
-            placeholder="Note (optional): e.g. 60 mph, fastball">
+            placeholder="メモ（任意）例：60km/h、ストレート">
           <button type="button" class="save" :disabled="!canSave" @click="save">
-            {{ saving ? 'Saving…' : 'Save round' }}
+            {{ saving ? '保存中…' : 'このラウンドを保存' }}
           </button>
           <p class="msg" aria-live="polite">{{ msg }}</p>
         </section>
 
         <section class="card">
           <div class="list-head">
-            <h2>Recent rounds</h2>
-            <span class="muted" v-if="rounds.length">{{ rounds.length }} rounds · {{ overall }}</span>
+            <h2>最近のラウンド</h2>
+            <span class="muted" v-if="rounds.length">{{ rounds.length }}ラウンド・通算ヒット率 {{ overallStats }}</span>
           </div>
 
-          <p v-if="loadState === 'loading'" class="muted">Loading…</p>
-          <p v-else-if="loadState === 'error'" class="muted">Could not load saved rounds.</p>
+          <p v-if="loadState === 'loading'" class="muted">読み込み中…</p>
+          <p v-else-if="loadState === 'error'" class="muted">記録を読み込めませんでした</p>
           <p v-else-if="!rounds.length" class="empty">
-            No rounds yet. Finish a round above and save it. It will show up here.
+            まだ記録がありません。ラウンドを入力して保存すると、ここに表示されます。
           </p>
           <ul v-else class="list">
             <li v-for="r in rounds" :key="r.id" class="item">
               <div class="item-top">
                 <span>{{ fmtDate(r.playedAt) }}</span>
-                <span class="score">{{ r.hits }}/{{ r.pitches }} · {{ r.rate }}%</span>
+                <span class="score">
+                  {{ stats(r.pattern).hits }}/{{ stats(r.pattern).pitches }}球
+                  （HR {{ stats(r.pattern).homeRuns }}）・{{ stats(r.pattern).rate }}%
+                </span>
               </div>
-              <div class="strip small">
+              <div class="strip">
                 <span v-for="(c, i) in (r.pattern || '').split('')" :key="i" class="dot"
-                  :class="c === 'H' ? 'hit' : 'miss'"></span>
+                  :class="c === '2' ? 'hr' : c === '1' ? 'hit' : ''"></span>
               </div>
               <div v-if="r.note" class="item-note">{{ r.note }}</div>
             </li>
