@@ -27,6 +27,8 @@
       --hr: #a86f00;
       --on-hr: #ffffff;
       --danger: #b4412c;
+      --accent-soft: #dcefe4;
+      --warn-soft: #f7ecd2;
     }
     @media (prefers-color-scheme: dark) {
       :root:not([data-theme="light"]) {
@@ -42,6 +44,8 @@
         --hr: #f0b84a;
         --on-hr: #1a1300;
         --danger: #ec7f67;
+        --accent-soft: #1f3a2c;
+        --warn-soft: #3a2f14;
       }
     }
     :root[data-theme="dark"] {
@@ -57,6 +61,8 @@
       --hr: #f0b84a;
       --on-hr: #1a1300;
       --danger: #ec7f67;
+      --accent-soft: #1f3a2c;
+      --warn-soft: #3a2f14;
     }
 
     /* ダブルタップでの拡大を無効化（ピンチ拡大は残す） */
@@ -66,7 +72,7 @@
       margin: 0;
       background: var(--bg);
       color: var(--fg);
-      font: 15px/1.5 system-ui, -apple-system, "Hiragino Sans", "Noto Sans JP", sans-serif;
+      font: 15px/1.6 system-ui, -apple-system, "Hiragino Sans", "Noto Sans JP", sans-serif;
       -webkit-tap-highlight-color: transparent;
     }
 
@@ -80,10 +86,33 @@
       display: flex;
       flex-direction: column;
       gap: 14px;
+      min-width: 0;
     }
     .head h1 { font-size: 22px; margin: 0; font-weight: 700; letter-spacing: 0.02em; }
     .sub { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
     h2 { font-size: 17px; margin: 0; }
+
+    /* タブ */
+    .tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px;
+      background: var(--card);
+      padding: 4px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+    }
+    .tab {
+      font: inherit;
+      font-weight: 700;
+      padding: 10px;
+      border: 0;
+      border-radius: 9px;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+    }
+    .tab.on { background: var(--bg); color: var(--fg); }
 
     .card {
       background: var(--card);
@@ -97,7 +126,6 @@
     }
     .muted { color: var(--muted); font-size: 13px; }
 
-    /* 球数の切り替え */
     .seg {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -119,14 +147,12 @@
     }
     .seg-btn.on { background: var(--card); color: var(--fg); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12); }
 
-    /* 凡例 */
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 0; padding: 0; list-style: none; font-size: 13px; color: var(--muted); }
     .legend li { display: flex; align-items: center; gap: 6px; }
     .chip { width: 14px; height: 14px; border-radius: 4px; border: 1px solid var(--line); background: var(--card); display: inline-block; }
     .chip.hit { background: var(--hit); border-color: var(--hit); }
     .chip.hr { background: var(--hr); border-color: var(--hr); }
 
-    /* 球のマス */
     .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
     .cell {
       font: inherit;
@@ -152,7 +178,6 @@
     .cell.hr { background: var(--hr); border-color: var(--hr); color: var(--on-hr); }
     .cell.hr .n { color: var(--on-hr); opacity: 0.85; }
 
-    /* 集計 */
     .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
     .tile { background: var(--tile); border-radius: 12px; padding: 10px 6px; text-align: center; }
     .stat-v { font-size: 24px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.2; }
@@ -197,13 +222,13 @@
     .save:disabled { opacity: 0.35; cursor: default; }
     .msg { margin: 0; min-height: 1.3em; font-size: 14px; color: var(--muted); text-align: center; }
 
-    /* 記録一覧 */
-    .list-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
-    .today { background: var(--tile); border-radius: 12px; padding: 10px 12px; font-size: 14px; }
     .strip { display: flex; flex-wrap: wrap; gap: 4px; }
     .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--line); flex: none; }
     .dot.hit { background: var(--hit); }
     .dot.hr { background: var(--hr); }
+
+    .list-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+    .today { background: var(--tile); border-radius: 12px; padding: 10px 12px; font-size: 14px; }
     .empty { color: var(--muted); margin: 0; }
     .list { list-style: none; margin: 0; padding: 0; }
     .item { padding: 12px 0; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 8px; min-width: 0; }
@@ -224,6 +249,34 @@
     }
     .del.armed { border-color: var(--danger); color: var(--danger); font-weight: 700; }
     .store-note { font-size: 12px; color: var(--muted); margin: 0; }
+
+    /* アドバイス（確認リスト） */
+    .progress { display: flex; flex-direction: column; gap: 6px; }
+    .progress-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 14px; }
+    .count { font-variant-numeric: tabular-nums; font-weight: 700; }
+    .bar { height: 8px; background: var(--line); border-radius: 999px; overflow: hidden; }
+    .bar-fill { height: 100%; background: var(--hit); transition: width 0.2s ease; }
+    .card-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+    .card-head .tag { font-size: 12px; color: var(--muted); }
+    .adv-item {
+      display: grid;
+      grid-template-columns: 24px 1fr;
+      gap: 12px;
+      align-items: start;
+      padding: 12px 4px;
+      border-top: 1px solid var(--line);
+      cursor: pointer;
+      min-width: 0;
+    }
+    .adv-item:first-of-type { border-top: 0; }
+    .adv-item input { width: 24px; height: 24px; margin: 2px 0 0; accent-color: var(--hit); cursor: pointer; }
+    .adv-item .t { font-weight: 600; overflow-wrap: anywhere; }
+    .adv-item .d { font-size: 14px; color: var(--muted); overflow-wrap: anywhere; }
+    .adv-item:has(input:checked) .t { color: var(--muted); text-decoration: line-through; }
+    .point { border-radius: 12px; padding: 12px 14px; background: var(--accent-soft); font-size: 14px; overflow-wrap: anywhere; }
+    .point strong { color: var(--hit); }
+    .warn { border-radius: 12px; padding: 12px 14px; background: var(--warn-soft); font-size: 14px; overflow-wrap: anywhere; }
+    .src { font-size: 12px; color: var(--muted); margin: 0; }
   </style>
 </head>
 <body>
@@ -263,6 +316,43 @@
     },
   };
 
+  // ---- アドバイス（右打ちの確認リスト）-----------------------------------
+  const ADVICE_KEY = 'batting-checklist-v1';
+  const ADVICE = [
+    {
+      title: '1. 持ち方（右打ち）', tag: '上の手＝左手 ／ 下の手＝右手',
+      items: [
+        { k: 'grip-1', t: '上の手（左手）は指で握る', d: '手のひら全体でガシッと握らない。指の関節で握るイメージ。' },
+        { k: 'grip-2', t: '上の手の親指と人差し指のV字は、後ろの肩（右肩）を指す', d: 'V字の向きがずれると、スイングの軌道もずれやすくなります。' },
+        { k: 'grip-3', t: '上の手の関節がそろっている', d: '指の付け根（ナックル）が一直線になるように並べます。' },
+        { k: 'grip-4', t: '下の手（右手）は上の手に隙間なく重ねる', d: '両手の間が空くと、バットがぶれやすくなります。' },
+        { k: 'grip-5', t: '力は抜いて持つ', d: '傘をさすような軽い感じで持ちます。力みは振りを遅くします。' },
+      ],
+    },
+    {
+      title: '2. 構え', tag: '最初の一球前に',
+      items: [
+        { k: 'stance-1', t: '手の位置は肩の高さあたり', d: '構えの最初は、手を肩の高さに置いて力を抜いて待ちます。' },
+        { k: 'stance-2', t: '足は少し開く', d: '開きすぎると体が動きにくくなります。' },
+        { k: 'stance-3', t: '足は上げずに振る', d: '最初は足を上げず、地面に着いたまま振るのがおすすめです。' },
+      ],
+    },
+    {
+      title: '3. 振り終わり', tag: '毎球',
+      items: [
+        { k: 'swing-1', t: '振った後に体がヨロヨロしない', d: '振り抜いたら、その場でピタッと止まる意識を持ちます。' },
+      ],
+    },
+  ];
+  const ADVICE_TOTAL = ADVICE.reduce((n, g) => n + g.items.length, 0);
+
+  function loadChecks() {
+    try { return JSON.parse(localStorage.getItem(ADVICE_KEY) || '{}'); } catch (e) { return {}; }
+  }
+  function saveChecks(s) {
+    try { localStorage.setItem(ADVICE_KEY, JSON.stringify(s)); } catch (e) {}
+  }
+
   // ---- 集計（結果の並びから計算する）---------------------------------------
   function stats(pattern) {
     const s = (pattern || '').split('');
@@ -298,6 +388,7 @@
 
   createApp({
     setup() {
+      const tab = ref('record');        // record | advice
       const today = new Date();
       const size = ref(JpHoliday.defaultRoundSize(today));
       const reason = dayReason(today);
@@ -309,6 +400,20 @@
       const msg = ref('');
       const armed = ref(null);          // 2回押しで実行する操作の目印
       let armTimer = null;
+
+      // アドバイス側の状態
+      const checks = ref(loadChecks());
+      const checkDone = computed(() => ADVICE.reduce((n, g) => n + g.items.filter(it => checks.value[it.k]).length, 0));
+      const checkPct = computed(() => (ADVICE_TOTAL ? Math.round((checkDone.value / ADVICE_TOTAL) * 100) : 0));
+      function toggleCheck(k) {
+        checks.value = { ...checks.value, [k]: !checks.value[k] };
+        saveChecks(checks.value);
+      }
+      function resetChecks() {
+        checks.value = {};
+        saveChecks({});
+        msg.value = 'チェックをリセットしました';
+      }
 
       const cur = computed(() => stats(cells.value.join('')));
       const overall = computed(() => sumStats(rounds.value));
@@ -410,8 +515,9 @@
       onBeforeUnmount(() => clearTimeout(armTimer));
 
       return {
-        size, reason, cells, note, rounds, loadState, saving, msg, armed,
+        tab, size, reason, cells, note, rounds, loadState, saving, msg, armed,
         cur, overall, todayTotal, canSave,
+        ADVICE, checks, checkDone, checkPct, toggleCheck, resetChecks, ADVICE_TOTAL,
         setSize, tap, cellClass, cellAria, reset, save, deleteRound, fmtDate, stats,
       };
     },
@@ -419,93 +525,150 @@
       <div class="wrap">
         <header class="head">
           <h1>バッティングマシン記録</h1>
-          <p class="sub">{{ reason }}。打った球をタップしてください</p>
+          <p class="sub" v-if="tab === 'record'">{{ reason }}。打った球をタップしてください</p>
+          <p class="sub" v-else>打席の前と、ラウンドの途中で確認してください</p>
         </header>
 
-        <section class="card">
-          <div class="seg" role="group" aria-label="球数">
-            <button v-for="n in [20, 25]" :key="n" type="button"
-              class="seg-btn" :class="{ on: size === n }"
-              @click="setSize(n)">{{ n }}球</button>
-          </div>
+        <nav class="tabs" role="tablist" aria-label="画面の切り替え">
+          <button type="button" role="tab" class="tab" :class="{ on: tab === 'record' }"
+            :aria-selected="tab === 'record'" @click="tab = 'record'">記録</button>
+          <button type="button" role="tab" class="tab" :class="{ on: tab === 'advice' }"
+            :aria-selected="tab === 'advice'" @click="tab = 'advice'">アドバイス</button>
+        </nav>
 
-          <ul class="legend">
-            <li><span class="chip"></span>タップなし</li>
-            <li><span class="chip hit"></span>1回＝ヒット</li>
-            <li><span class="chip hr"></span>2回＝ホームラン</li>
-            <li>3回で解除</li>
-          </ul>
+        <!-- 記録タブ -->
+        <template v-if="tab === 'record'">
+          <section class="card">
+            <div class="seg" role="group" aria-label="球数">
+              <button v-for="n in [20, 25]" :key="n" type="button"
+                class="seg-btn" :class="{ on: size === n }"
+                @click="setSize(n)">{{ n }}球</button>
+            </div>
 
-          <div class="grid">
-            <button v-for="(v, i) in cells" :key="i" type="button" class="cell"
-              :class="cellClass(v)" :aria-label="cellAria(i, v)" @click="tap(i)">
-              <span class="n">{{ i + 1 }}</span>
-              <span class="lbl">{{ v === '1' ? 'ヒット' : v === '2' ? 'HR' : '' }}</span>
+            <ul class="legend">
+              <li><span class="chip"></span>タップなし</li>
+              <li><span class="chip hit"></span>1回＝ヒット</li>
+              <li><span class="chip hr"></span>2回＝ホームラン</li>
+              <li>3回で解除</li>
+            </ul>
+
+            <div class="grid">
+              <button v-for="(v, i) in cells" :key="i" type="button" class="cell"
+                :class="cellClass(v)" :aria-label="cellAria(i, v)" @click="tap(i)">
+                <span class="n">{{ i + 1 }}</span>
+                <span class="lbl">{{ v === '1' ? 'ヒット' : v === '2' ? 'HR' : '' }}</span>
+              </button>
+            </div>
+
+            <div class="summary">
+              <div class="tile"><div class="stat-v">{{ cur.hits }}</div><div class="stat-l">ヒット</div></div>
+              <div class="tile"><div class="stat-v">{{ cur.homeRuns }}</div><div class="stat-l">ホームラン</div></div>
+              <div class="tile"><div class="stat-v">{{ cur.rate }}%</div><div class="stat-l">ヒット率</div></div>
+            </div>
+
+            <div class="btn-row">
+              <button type="button" class="ghost" :class="{ armed: armed === 'reset' }" @click="reset">
+                {{ armed === 'reset' ? 'もう一度押すとリセット' : '入力をリセット' }}
+              </button>
+            </div>
+
+            <input class="note" v-model="note" maxlength="120"
+              placeholder="メモ（任意）例：60km/h、ストレート">
+            <button type="button" class="save" :disabled="!canSave" @click="save">
+              {{ saving ? '保存中…' : size + '球のラウンドを保存' }}
             </button>
-          </div>
+            <p class="msg" aria-live="polite">{{ msg }}</p>
+          </section>
 
-          <div class="summary">
-            <div class="tile"><div class="stat-v">{{ cur.hits }}</div><div class="stat-l">ヒット</div></div>
-            <div class="tile"><div class="stat-v">{{ cur.homeRuns }}</div><div class="stat-l">ホームラン</div></div>
-            <div class="tile"><div class="stat-v">{{ cur.rate }}%</div><div class="stat-l">ヒット率</div></div>
-          </div>
+          <section class="card">
+            <div class="list-head">
+              <h2>最近のラウンド</h2>
+              <span class="muted" v-if="overall.rounds">{{ overall.rounds }}ラウンド・通算ヒット率 {{ overall.rate }}%</span>
+            </div>
 
-          <div class="btn-row">
-            <button type="button" class="ghost" :class="{ armed: armed === 'reset' }" @click="reset">
-              {{ armed === 'reset' ? 'もう一度押すとリセット' : '入力をリセット' }}
-            </button>
-          </div>
+            <div class="today" v-if="todayTotal.rounds">
+              今日：{{ todayTotal.rounds }}ラウンド・{{ todayTotal.hits }}/{{ todayTotal.pitches }}球・ヒット率 {{ todayTotal.rate }}%
+            </div>
 
-          <input class="note" v-model="note" maxlength="120"
-            placeholder="メモ（任意）例：60km/h、ストレート">
-          <button type="button" class="save" :disabled="!canSave" @click="save">
-            {{ saving ? '保存中…' : size + '球のラウンドを保存' }}
-          </button>
-          <p class="msg" aria-live="polite">{{ msg }}</p>
-        </section>
+            <p v-if="loadState === 'loading'" class="muted">読み込み中…</p>
+            <p v-else-if="loadState === 'error'" class="muted">記録を読み込めませんでした</p>
+            <p v-else-if="!rounds.length" class="empty">
+              まだ記録がありません。ラウンドを入力して保存すると、ここに表示されます。
+            </p>
+            <ul v-else class="list">
+              <li v-for="r in rounds" :key="r.id" class="item">
+                <div class="item-top">
+                  <span>{{ fmtDate(r.playedAt) }}</span>
+                  <span class="score">
+                    {{ stats(r.pattern).hits }}/{{ stats(r.pattern).pitches }}球
+                    （HR {{ stats(r.pattern).homeRuns }}）・{{ stats(r.pattern).rate }}%
+                  </span>
+                </div>
+                <div class="strip">
+                  <span v-for="(c, i) in (r.pattern || '').split('')" :key="i" class="dot"
+                    :class="c === '2' ? 'hr' : c === '1' ? 'hit' : ''"></span>
+                </div>
+                <div class="item-foot">
+                  <span class="item-note">{{ r.note }}</span>
+                  <button type="button" class="del" :class="{ armed: armed === 'del-' + r.id }"
+                    @click="deleteRound(r.id)">
+                    {{ armed === 'del-' + r.id ? 'もう一度で削除' : '削除' }}
+                  </button>
+                </div>
+              </li>
+            </ul>
 
-        <section class="card">
-          <div class="list-head">
-            <h2>最近のラウンド</h2>
-            <span class="muted" v-if="overall.rounds">{{ overall.rounds }}ラウンド・通算ヒット率 {{ overall.rate }}%</span>
-          </div>
+            <p class="store-note" v-if="rounds.length">
+              記録はこの端末のブラウザに保存されています。
+            </p>
+          </section>
+        </template>
 
-          <div class="today" v-if="todayTotal.rounds">
-            今日：{{ todayTotal.rounds }}ラウンド・{{ todayTotal.hits }}/{{ todayTotal.pitches }}球・ヒット率 {{ todayTotal.rate }}%
-          </div>
-
-          <p v-if="loadState === 'loading'" class="muted">読み込み中…</p>
-          <p v-else-if="loadState === 'error'" class="muted">記録を読み込めませんでした</p>
-          <p v-else-if="!rounds.length" class="empty">
-            まだ記録がありません。ラウンドを入力して保存すると、ここに表示されます。
-          </p>
-          <ul v-else class="list">
-            <li v-for="r in rounds" :key="r.id" class="item">
-              <div class="item-top">
-                <span>{{ fmtDate(r.playedAt) }}</span>
-                <span class="score">
-                  {{ stats(r.pattern).hits }}/{{ stats(r.pattern).pitches }}球
-                  （HR {{ stats(r.pattern).homeRuns }}）・{{ stats(r.pattern).rate }}%
-                </span>
+        <!-- アドバイスタブ -->
+        <template v-else>
+          <section class="card">
+            <div class="progress">
+              <div class="progress-row">
+                <span>確認済み</span>
+                <span class="count">{{ checkDone }} / {{ ADVICE_TOTAL }}</span>
               </div>
-              <div class="strip">
-                <span v-for="(c, i) in (r.pattern || '').split('')" :key="i" class="dot"
-                  :class="c === '2' ? 'hr' : c === '1' ? 'hit' : ''"></span>
-              </div>
-              <div class="item-foot">
-                <span class="item-note">{{ r.note }}</span>
-                <button type="button" class="del" :class="{ armed: armed === 'del-' + r.id }"
-                  @click="deleteRound(r.id)">
-                  {{ armed === 'del-' + r.id ? 'もう一度で削除' : '削除' }}
-                </button>
-              </div>
-            </li>
-          </ul>
+              <div class="bar"><div class="bar-fill" :style="{ width: checkPct + '%' }"></div></div>
+            </div>
+          </section>
 
-          <p class="store-note" v-if="rounds.length">
-            記録はこの端末のブラウザに保存されています。
-          </p>
-        </section>
+          <section class="card" v-for="g in ADVICE" :key="g.title">
+            <div class="card-head">
+              <h2>{{ g.title }}</h2>
+              <span class="tag">{{ g.tag }}</span>
+            </div>
+            <label v-for="it in g.items" :key="it.k" class="adv-item">
+              <input type="checkbox" :checked="!!checks[it.k]" @change="toggleCheck(it.k)">
+              <div>
+                <div class="t">{{ it.t }}</div>
+                <div class="d">{{ it.d }}</div>
+              </div>
+            </label>
+          </section>
+
+          <section class="card">
+            <div class="point">
+              <strong>握りは指、力は抜く、手は肩の高さ。</strong>
+              この3つを打席の前に確認します。
+            </div>
+            <div class="warn">
+              <strong>注意：</strong>
+              この内容は、初心者向けの動画の説明を要約したものです。実際の指導は、コーチや指導者の指示を優先してください。
+            </div>
+            <p class="src">出典：「元プロ野球選手による超初心者向けのバッティング講座」（動画の字幕から要点をまとめました）</p>
+            <div class="btn-row">
+              <button type="button" class="ghost" :class="{ armed: armed === 'advice-reset' }"
+                @click="confirmTap('advice-reset', resetChecks)">
+                {{ armed === 'advice-reset' ? 'もう一度押すとリセット' : 'チェックをリセット' }}
+              </button>
+            </div>
+            <p class="msg" aria-live="polite">{{ msg }}</p>
+          </section>
+        </template>
       </div>
     `,
   }).mount('#app');
