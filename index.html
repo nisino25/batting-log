@@ -430,7 +430,6 @@
       const reason = dayReason(today);
       const speed = ref(loadSpeed());
       const hits = ref(0);              // ヒット数（HRを含む）
-      const homeRuns = ref(0);          // うちホームラン
       const note = ref('');
       const rounds = ref([]);
       const loadState = ref('loading'); // loading | ready | error
@@ -455,7 +454,7 @@
 
       const cur = computed(() => {
         const rate = size.value ? Math.round((hits.value / size.value) * 100) : 0;
-        return { hits: hits.value, homeRuns: homeRuns.value, singles: hits.value - homeRuns.value, rate };
+        return { hits: hits.value, rate };
       });
       const overall = computed(() => sumStats(rounds.value));
       const todayTotal = computed(() => sumStats(rounds.value.filter(r => sameDay(new Date(r.playedAt), new Date()))));
@@ -478,7 +477,6 @@
       function setSize(n) {
         size.value = n;
         hits.value = 0;
-        homeRuns.value = 0;
         msg.value = '';
       }
       function setSpeed(v) {
@@ -494,23 +492,11 @@
       function decHits() {
         buzz();
         if (hits.value > 0) hits.value--;
-        if (homeRuns.value > hits.value) homeRuns.value = hits.value;
-        msg.value = '';
-      }
-      function incHR() {
-        buzz();
-        if (homeRuns.value < hits.value) homeRuns.value++;
-        msg.value = '';
-      }
-      function decHR() {
-        buzz();
-        if (homeRuns.value > 0) homeRuns.value--;
         msg.value = '';
       }
 
       function resetRound() {
         hits.value = 0;
-        homeRuns.value = 0;
         note.value = '';
         msg.value = '入力をリセットしました';
       }
@@ -523,19 +509,17 @@
         saving.value = true;
         msg.value = '';
         try {
-          const s = rowStats({ pitches: size.value, hits: hits.value, homeRuns: homeRuns.value });
+          const s = rowStats({ pitches: size.value, hits: hits.value });
           const row = await Store.add({
             playedAt: new Date().toISOString(),
             pitches: size.value,
             hits: hits.value,
-            homeRuns: homeRuns.value,
             rate: s.rate,
             speed: speed.value,
             note: note.value.trim(),
           });
           rounds.value = [row, ...rounds.value];
           hits.value = 0;
-          homeRuns.value = 0;
           note.value = '';
           msg.value = '保存しました';
         } catch (e) {
@@ -574,10 +558,10 @@
       onBeforeUnmount(() => clearTimeout(armTimer));
 
       return {
-        tab, size, speed, speeds: SPEEDS, setSpeed, reason, hits, homeRuns, note, rounds, loadState, saving, msg, armed,
+        tab, size, speed, speeds: SPEEDS, setSpeed, reason, hits, note, rounds, loadState, saving, msg, armed,
         cur, overall, todayTotal, canSave,
         ADVICE, checks, checkDone, checkPct, toggleCheck, resetChecks, ADVICE_TOTAL,
-        setSize, incHits, decHits, incHR, decHR, reset, save, deleteRound, fmtDate, rowStats,
+        setSize, incHits, decHits, reset, save, deleteRound, fmtDate, rowStats,
       };
     },
     template: `
@@ -616,7 +600,7 @@
               <div class="counter-row">
                 <div class="counter-label">
                   <strong>ヒット</strong>
-                  <span>{{ size }}球中（ホームランも含む）</span>
+                  <span>{{ size }}球中</span>
                 </div>
                 <div class="stepper">
                   <button type="button" class="step" aria-label="ヒットを1つ減らす"
@@ -627,25 +611,12 @@
                 </div>
               </div>
 
-              <div class="counter-row">
-                <div class="counter-label">
-                  <strong>うちホームラン</strong>
-                  <span>ヒットの中の本数</span>
-                </div>
-                <div class="stepper">
-                  <button type="button" class="step" aria-label="ホームランを1つ減らす"
-                    :disabled="homeRuns === 0" @click="decHR">−</button>
-                  <span class="step-v">{{ homeRuns }}</span>
-                  <button type="button" class="step plus" aria-label="ホームランを1つ増やす"
-                    :disabled="homeRuns >= hits" @click="incHR">＋</button>
-                </div>
-              </div>
             </div>
 
             <div class="summary">
               <div class="tile"><div class="stat-v">{{ cur.rate }}%</div><div class="stat-l">ヒット率</div></div>
-              <div class="tile"><div class="stat-v">{{ cur.singles }}</div><div class="stat-l">単打</div></div>
-              <div class="tile"><div class="stat-v">{{ cur.homeRuns }}</div><div class="stat-l">ホームラン</div></div>
+              <div class="tile"><div class="stat-v">{{ cur.hits }}</div><div class="stat-l">ヒット</div></div>
+              <div class="tile"><div class="stat-v">{{ size - cur.hits }}</div><div class="stat-l">ヒットなし</div></div>
             </div>
 
             <div class="btn-row">
@@ -683,7 +654,7 @@
                   <span>{{ fmtDate(r.playedAt) }}</span>
                   <span class="score">
                     {{ rowStats(r).hits }}/{{ rowStats(r).pitches }}球
-                    （HR {{ rowStats(r).homeRuns }}）・{{ rowStats(r).rate }}%
+                    ・{{ rowStats(r).rate }}%
                   </span>
                 </div>
                 <div class="item-foot">
